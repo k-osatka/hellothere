@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ghibli Kitchen | Fresh Start</title>
+    <style>
+        :root { --ghibli-brown: #5d4037; --bg-cream: #e9e0d5; --accent: #b8ffb5; }
+        
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; font-family: 'Verdana', sans-serif; 
+            background-color: var(--bg-cream); 
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw; height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        #hint-text {
+            margin-top: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--ghibli-brown);
+            padding: 20px 40px;
+            border-radius: 40px;
+            font-size: 1.1rem;
+            color: var(--ghibli-brown);
+            z-index: 1000;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            min-width: 380px;
+            transition: opacity 0.8s ease-in-out;
+            line-height: 1.5;
+        }
+
+        #fridge-area {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: var(--bg-cream);
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            z-index: 50;
+            transition: background-image 0.5s ease-in-out;
+        }
+
+        #fridge-click-trigger {
+            position: absolute; z-index: 100; cursor: pointer;
+            left: 50%; top: 50%; transform: translate(-50%, -50%);
+            width: 450px; height: 650px;
+        }
+
+        #get-yogurt-btn {
+            display: none; position: absolute;
+            width: 140px; cursor: pointer; z-index: 300;
+            left: 41%; top: 44%;
+            filter: drop-shadow(0 5px 20px rgba(0,0,0,0.3));
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #fade-overlay {
+            display: none; position: fixed; top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            z-index: 2000; flex-direction: column;
+            justify-content: flex-end; align-items: center;
+            opacity: 0;
+            transition: opacity 2s ease;
+            background-image: url('final_dessert.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .final-content-bottom {
+            background: rgba(0, 0, 0, 0.6);
+            width: 100%;
+            padding: 40px 0;
+            color: #f0ede9;
+            text-align: center;
+            backdrop-filter: blur(3px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .final-text {
+            font-style: italic; 
+            font-size: 1.4rem; 
+            margin-bottom: 15px; 
+            line-height: 1.4;
+            padding: 0 20px;
+        }
+
+        .joke-small {
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            font-size: 0.75rem; 
+            opacity: 0.7;
+            margin-bottom: 25px;
+        }
+
+        .btn-story-end {
+            display: inline-block;
+            background: transparent;
+            color: #d1f2eb;
+            border: 1px solid rgba(209, 242, 235, 0.4);
+            padding: 12px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Verdana', sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            transition: all 0.5s ease;
+            opacity: 0;
+            text-decoration: none;
+            animation: pulse-glow 2.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(1); box-shadow: 0 0 0 rgba(209, 242, 235, 0); }
+            50% { transform: scale(1.05); box-shadow: 0 0 15px rgba(209, 242, 235, 0.2); }
+            100% { transform: scale(1); box-shadow: 0 0 0 rgba(209, 242, 235, 0); }
+        }
+
+        .btn-story-end:hover {
+            background: rgba(209, 242, 235, 0.2);
+            transform: scale(1.1) !important;
+            animation: none;
+        }
+    </style>
+</head>
+<body onclick="resyncMusic()">
+
+    <audio id="bg-music" loop><source src="music.mp3" type="audio/mpeg"></audio>
+    <audio id="open-sound"><source src="open.mp3" type="audio/mpeg"></audio>
+    <audio id="magic-sound"><source src="magic.mp3" type="audio/mpeg"></audio>
+    <audio id="click-btn-sound"><source src="click2.mp3" type="audio/mpeg"></audio>
+
+<div id="game-container">
+    <div id="hint-text"><span id="story-line"><b>The time has come. <br>Click the fridge to open it.</b></span></div>
+
+    <div id="fridge-area" style="background-image: url('fridge_closed.png');">
+        <div id="fridge-click-trigger"></div>
+    </div>
+
+    <img src="teos_yogurt.png" id="get-yogurt-btn" onclick="takeYogurt()">
+
+    <div id="fade-overlay">
+        <div class="final-content-bottom">
+            <p class="final-text">
+                And here is our yogurt... <br>
+                I hope you still like it. It was made with a bit of peace and a lot of honesty.
+            </p>
+            <p class="joke-small">
+                By the way, if you made it this far... <br>
+                I guess we finally had that joint cooking session after all, haha.
+            </p>
+            
+            <a href="walk.html" class="btn-story-end" id="next-page-btn" onclick="handleFinalClick(event)">Our little story is almost at its end...</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const audio = document.getElementById('bg-music');
+    const openSound = document.getElementById('open-sound');
+    const magicSound = document.getElementById('magic-sound');
+    const clickBtnSound = document.getElementById('click-btn-sound');
+
+    const fridgeArea = document.getElementById('fridge-area');
+    const trigger = document.getElementById('fridge-click-trigger');
+    const yogurtBtn = document.getElementById('get-yogurt-btn');
+    const storyLine = document.getElementById('story-line');
+    const fadeOverlay = document.getElementById('fade-overlay');
+    const hintBox = document.getElementById('hint-text');
+    const nextBtn = document.getElementById('next-page-btn');
+
+    let state = 'fridge_closed';
+
+    // Музыкальная синхронизация
+    function resyncMusic() {
+        if (audio.paused) {
+            const savedTime = localStorage.getItem('musicTime');
+            if (savedTime) audio.currentTime = savedTime;
+            audio.volume = 0.4;
+            audio.play().catch(() => {});
+        }
+    }
+
+    setInterval(() => {
+        if (!audio.paused) localStorage.setItem('musicTime', audio.currentTime);
+    }, 1000);
+
+    window.onload = () => {
+        const savedTime = localStorage.getItem('musicTime');
+        if (savedTime) audio.currentTime = savedTime;
+        audio.play().catch(() => {});
+    };
+
+    // Логика взаимодействий
+    trigger.addEventListener('click', () => {
+        if (state === 'fridge_closed') {
+            openSound.play();
+            fridgeArea.style.backgroundImage = "url('fridge_opened.png')";
+            state = 'fridge_opened';
+            storyLine.innerHTML = "<b>There it is. <br>Tap the TEOS to take it.</b>";
+            trigger.style.display = 'none';
+            yogurtBtn.style.display = 'block';
+        }
+    });
+
+    function takeYogurt() {
+        if (state !== 'fridge_opened') return;
+        
+        yogurtBtn.style.transform = "scale(1.5) translateY(-20px)";
+        yogurtBtn.style.opacity = "0";
+        hintBox.style.opacity = "0";
+
+        setTimeout(() => {
+            magicSound.play(); // Звук магии при появлении десерта
+            fadeOverlay.style.display = 'flex';
+            setTimeout(() => {
+                fadeOverlay.style.opacity = '1';
+                setTimeout(() => {
+                    nextBtn.style.opacity = '1';
+                }, 2500);
+            }, 100);
+        }, 800);
+    }
+
+    function handleFinalClick(e) {
+        e.preventDefault();
+        clickBtnSound.play(); // Тот самый click2.mp3
+        localStorage.setItem('musicTime', audio.currentTime);
+        setTimeout(() => {
+            window.location.href = "walk.html";
+        }, 400);
+    }
+</script>
+
+</body>
+</html>

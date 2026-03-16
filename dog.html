@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Luna | Soft Light</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&family=Comfortaa:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0b1f14;
+            --forest-green: #1e4a2e;
+            --accent-green: #b8ffb5;
+            --soft-white: #eaffda;
+            --btn-grad: linear-gradient(135deg, #b8ffb5 0%, #70e06d 100%);
+        }
+
+        /* Hide standard cursor */
+        * { cursor: none !important; }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            background: var(--bg-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Nunito', sans-serif;
+            color: var(--soft-white);
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        /* ЭФФЕКТ МАГИЧЕСКОГО РАССЕЯННОГО СВЕТА */
+        .moon { 
+            position: absolute; top: 7%; right: 10%; 
+            width: 250px; height: 250px; 
+            background: 
+                radial-gradient(circle at center, #fffdf2 0%, rgba(254, 249, 231, 0.6) 15%, rgba(253, 242, 208, 0.2) 40%, transparent 70%),
+                radial-gradient(circle at center, rgba(184, 255, 181, 0.1) 0%, transparent 50%);
+            border-radius: 50%; 
+            z-index: 0;
+            filter: blur(5px);
+            animation: moon-breathe 8s infinite ease-in-out;
+        }
+
+        @keyframes moon-breathe {
+            0%, 100% { transform: scale(1); opacity: 0.8; filter: blur(5px); }
+            50% { transform: scale(1.15); opacity: 1; filter: blur(8px); }
+        }
+
+        #story-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 2000; pointer-events: none;
+        }
+        .story-popup {
+            background: rgba(255, 255, 255, 0.98);
+            color: var(--bg-dark);
+            padding: 25px 50px; border-radius: 50px;
+            font-size: 24px; font-weight: 800;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 1s ease, transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center; border: 4px solid var(--accent-green);
+        }
+        .story-popup.active { opacity: 1; transform: translateY(0); }
+
+        #custom-cursor {
+            position: fixed; width: 8px; height: 8px; background: var(--accent-green);
+            border-radius: 50%; pointer-events: none; z-index: 1000;
+            box-shadow: 0 0 15px var(--accent-green); transform: translate(-50%, -50%);
+        }
+        #cursor-follower {
+            position: fixed; width: 30px; height: 30px;
+            border: 2px solid rgba(184, 255, 181, 0.3); border-radius: 50%;
+            pointer-events: none; z-index: 999; transform: translate(-50%, -50%);
+            transition: transform 0.15s ease-out;
+        }
+
+        #bg-glow { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        .grass { position: absolute; bottom: -20px; left: 0; width: 110%; height: 20vh; background: linear-gradient(to top, rgba(11, 31, 20, 0.9), transparent); z-index: 5; }
+
+        .container {
+            position: relative; display: flex; align-items: center; gap: 80px; z-index: 2;
+            background: rgba(255, 255, 255, 0.03); padding: 60px 100px; border-radius: 60px;
+            backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0; transform: scale(0.95); transition: all 1.2s ease;
+        }
+        .container.ready { opacity: 1; transform: scale(1); }
+
+        #dog { width: 320px; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.6)); animation: breathing 4s infinite ease-in-out; transition: transform 0.2s; }
+        @keyframes breathing { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02) translateY(-5px); } }
+        .excited { animation: wiggle 0.15s infinite !important; }
+        @keyframes wiggle { 0% { transform: rotate(-3deg) scale(1.05); } 50% { transform: rotate(3deg) scale(1.05); } 100% { transform: rotate(-3deg) scale(1.05); } }
+        .jump-anim { animation: happyJump 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important; }
+        @keyframes happyJump { 0% { transform: scale(1,1); } 50% { transform: scale(0.9, 1.1) translateY(-80px); } 100% { transform: scale(1,1); } }
+
+        .bubble { position: absolute; top: -40px; right: -30px; background: var(--soft-white); color: var(--bg-dark); padding: 12px 24px; border-radius: 30px; font-weight: 800; opacity: 0; transform: translateY(10px); transition: all 0.5s ease; z-index: 10; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .bubble.show { opacity: 1; transform: translateY(0); }
+
+        #bone { width: 90px; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3)); transition: all 0.3s ease; animation: float-bone 3s infinite ease-in-out; }
+        #bone:hover { transform: scale(1.2) rotate(10deg); filter: drop-shadow(0 0 15px var(--accent-green)) brightness(1.2); }
+        @keyframes float-bone { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        #nextButton {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            padding: 30px 90px; font-size: 38px; font-family: 'Comfortaa', cursive;
+            background: var(--btn-grad); border: none; border-radius: 100px;
+            color: var(--bg-dark); display: none;
+            box-shadow: 0 0 50px rgba(184, 255, 181, 0.5);
+            transition: all 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.5); z-index: 100;
+        }
+        #nextButton.visible { display: block; transform: translate(-50%, -50%) scale(1); animation: pulse-glow 2s infinite; }
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 20px rgba(184, 255, 181, 0.4); } 50% { box-shadow: 0 0 60px rgba(184, 255, 181, 0.8); } }
+
+        .heart { position: absolute; font-size: 35px; pointer-events: none; z-index: 100; }
+        .sparkle { position: absolute; width: 4px; height: 4px; background: var(--accent-green); border-radius: 50%; pointer-events: none; z-index: 99; animation: sparkle-fade 0.6s forwards; }
+        @keyframes sparkle-fade { to { opacity: 0; transform: scale(0); } }
+
+        .firefly { position: absolute; width: 3px; height: 3px; background: var(--accent-green); border-radius: 50%; opacity: 0.5; animation: drift linear infinite; }
+        @keyframes drift { 0% { transform: translate(0, 0); } 100% { transform: translate(var(--dx), var(--dy)); } }
+    </style>
+</head>
+<body onclick="resyncMusic()">
+
+    <audio id="bg-music" loop><source src="music.mp3" type="audio/mpeg"></audio>
+    <audio id="click-sound"><source src="click.mp3" type="audio/mpeg"></audio>
+    <audio id="eating-sound"><source src="eating.mp3" type="audio/mpeg"></audio>
+
+    <div id="story-overlay"><div class="story-popup" id="story-popup"></div></div>
+    <div id="custom-cursor"></div>
+    <div id="cursor-follower"></div>
+    <div id="bg-glow"></div>
+    <div class="moon" id="moon"></div>
+    <div class="grass" id="grass"></div>
+    
+    <button id="nextButton" onclick="nextPage()">jump</button>
+
+    <div class="container" id="mainContainer">
+        <div style="display:flex; flex-direction:column; align-items:center;">
+            <h1 style="color:var(--accent-green); font-size: 34px; font-weight: 800;">Feed Luna to start</h1>
+            <div style="position:relative">
+                <div id="bubble" class="bubble">Woof? 🐾</div>
+                <img src="dog.png" id="dog" alt="Luna">
+            </div>
+            <div id="counter" style="margin-top:30px; font-weight:800; color:var(--accent-green); background:rgba(0,0,0,0.4); padding:10px 25px; border-radius:40px; letter-spacing: 2px;">Treats: 0 / 3</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:center; gap:40px; background:rgba(255,255,255,0.05); padding:40px; border-radius:40px; border: 1px dashed rgba(184, 255, 181, 0.2);">
+            <img src="bowl.png" style="width: 150px;">
+            <img src="bone.png" id="bone" draggable="true">
+        </div>
+    </div>
+
+<script>
+    // --- ЗВУКОВАЯ ЛОГИКА ---
+    const audio = document.getElementById('bg-music');
+    const clickSound = document.getElementById('click-sound');
+    const eatingSound = document.getElementById('eating-sound');
+
+    function playClick() {
+        clickSound.currentTime = 0;
+        clickSound.volume = 0.25;
+        clickSound.play().catch(() => {});
+    }
+
+    function playEating() {
+        eatingSound.currentTime = 0;
+        eatingSound.volume = 0.4;
+        eatingSound.play().catch(() => {});
+    }
+
+    function resyncMusic() {
+        if (audio.paused) {
+            const savedTime = localStorage.getItem('musicTime');
+            if (savedTime) audio.currentTime = savedTime;
+            audio.play().catch(e => console.log("Audio play failed"));
+            audio.volume = 0.4;
+        }
+    }
+
+    window.onload = () => {
+        const savedTime = localStorage.getItem('musicTime');
+        if (savedTime) audio.currentTime = savedTime;
+        audio.play().catch(() => console.log("Waiting for click"));
+        setTimeout(runStoryFlow, 800);
+    };
+
+    setInterval(() => {
+        if (!audio.paused) localStorage.setItem('musicTime', audio.currentTime);
+    }, 1000);
+
+    // --- ЛОГИКА ИГРЫ ---
+    if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+
+    let feedCount = 0;
+    let isDragging = false;
+    let storyStarted = false;
+
+    const storyPopup = document.getElementById('story-popup');
+    const container = document.getElementById('mainContainer');
+    const dog = document.getElementById("dog");
+    const bone = document.getElementById("bone");
+    const bubble = document.getElementById("bubble");
+    const cursor = document.getElementById('custom-cursor');
+    const follower = document.getElementById('cursor-follower');
+
+    const feedPhrases = ["Yum! 🦴", "One more? 💖", "Almost there! ✨", "Let's go! 🐶"];
+    const storyPhrases = [
+        "I think I saw a dog here... 🐕",
+        "Where is she hiding?",
+        "Ah, there you are! Luna! ✨",
+        "Looks like she's a bit hungry...",
+        "Let's give her some treats! 🦴"
+    ];
+
+    async function runStoryFlow() {
+        if (storyStarted) return;
+        storyStarted = true;
+
+        for (let i = 0; i < storyPhrases.length; i++) {
+            storyPopup.innerHTML = storyPhrases[i];
+            storyPopup.classList.add('active');
+            await new Promise(r => setTimeout(r, 3500)); 
+            storyPopup.classList.remove('active');
+            await new Promise(r => setTimeout(r, 1000));
+        }
+        
+        container.classList.add('ready');
+        setTimeout(() => bubble.classList.add("show"), 800);
+    }
+
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+        follower.style.left = e.clientX + 'px';
+        follower.style.top = e.clientY + 'px';
+        document.getElementById("bg-glow").style.background = `radial-gradient(circle at ${e.clientX}px ${e.clientY}px, var(--forest-green) 0%, var(--bg-dark) 70%)`;
+        if (isDragging) spawnSparkle(e.clientX, e.clientY);
+    });
+
+    bone.addEventListener("dragstart", (e) => { 
+        playClick(); 
+        isDragging = true; 
+        dog.classList.add("excited");
+        e.dataTransfer.setData('text/plain', ''); 
+    });
+    
+    bone.addEventListener("dragend", () => { isDragging = false; dog.classList.remove("excited"); });
+
+    dog.addEventListener("dragover", (e) => e.preventDefault());
+    dog.addEventListener("drop", (e) => {
+        e.preventDefault();
+        playEating(); // ДОБАВИЛА ЗВУК ПОЕДАНИЯ
+        bubble.innerText = feedPhrases[feedCount] || feedPhrases[3];
+        feedCount++;
+        document.getElementById("counter").innerText = `Treats: ${feedCount} / 3`;
+        dog.classList.remove("jump-anim");
+        void dog.offsetWidth; 
+        dog.classList.add("jump-anim");
+        spawnEmojiExplosion(e.clientX, e.clientY);
+        
+        if (feedCount >= 3) {
+            container.style.opacity = "0.1";
+            container.style.filter = "blur(10px)";
+            container.style.pointerEvents = "none";
+            setTimeout(() => { 
+                document.getElementById("nextButton").classList.add("visible"); 
+            }, 600);
+        }
+    });
+
+    function spawnSparkle(x, y) {
+        const s = document.createElement("div");
+        s.className = "sparkle";
+        s.style.left = x + "px"; s.style.top = y + "px";
+        document.body.appendChild(s);
+        setTimeout(() => s.remove(), 600);
+    }
+
+    function spawnEmojiExplosion(x, y) {
+        const emojis = ["💖", "🦴", "🐾", "✨", "🐶"];
+        for(let i=0; i<10; i++) {
+            const h = document.createElement("div");
+            h.className = "heart";
+            h.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            h.style.left = x + "px"; h.style.top = y + "px";
+            document.body.appendChild(h);
+            h.animate([
+                { transform: 'translate(0,0) scale(1)', opacity: 1 },
+                { transform: `translate(${(Math.random()-0.5)*250}px, -200px) scale(0)`, opacity: 0 }
+            ], { duration: 1200, easing: 'ease-out' }).onfinish = () => h.remove();
+        }
+    }
+
+    function nextPage() {
+        playClick(); 
+        localStorage.setItem('musicTime', audio.currentTime);
+        document.body.style.filter = "brightness(2) blur(20px)";
+        document.body.style.opacity = "0";
+        setTimeout(() => { window.location.href = "kitchen.html"; }, 1000);
+    }
+
+    // Fireflies
+    for (let i = 0; i < 20; i++) {
+        const f = document.createElement("div");
+        f.className = "firefly";
+        f.style.left = Math.random() * 100 + "vw"; f.style.top = Math.random() * 100 + "vh";
+        f.style.setProperty('--dx', (Math.random() - 0.5) * 200 + 'px');
+        f.style.setProperty('--dy', (Math.random() - 0.5) * 200 + 'px');
+        f.style.animationDuration = (10 + Math.random() * 10) + "s";
+        document.body.appendChild(f);
+    }
+</script>
+</body>
+</html>

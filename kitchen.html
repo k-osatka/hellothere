@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ghibli Kitchen | Quiet Time</title>
+    <style>
+        :root { --ghibli-brown: #5d4037; --bg-cream: #e9e0d5; --accent: #b8ffb5; }
+        
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; font-family: 'Verdana', sans-serif; 
+            background-color: var(--bg-cream); 
+        }
+
+        body { cursor: pointer; }
+
+        #game-container {
+            position: relative;
+            width: 100vw; height: 100vh;
+            background: url('kitchen_bg.jpg') no-repeat center center;
+            background-size: cover;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        #hint-text {
+            margin-top: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--ghibli-brown);
+            padding: 20px 40px;
+            border-radius: 40px;
+            font-size: 1.1rem;
+            color: var(--ghibli-brown);
+            z-index: 1000;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            min-width: 380px;
+            transition: opacity 0.8s ease-in-out;
+            line-height: 1.5;
+            pointer-events: none;
+        }
+
+        #table-area {
+            position: absolute; bottom: 5%; width: 100%; height: 60%;
+            transition: opacity 0.8s ease;
+        }
+
+        /* АНИМАЦИЯ ЛЕВИТАЦИИ */
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .ingredient {
+            position: absolute; width: 110px; cursor: pointer;
+            z-index: 10; transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: floating 3s infinite ease-in-out;
+        }
+
+        #item1 { animation-delay: 0s; }
+        #item2 { animation-delay: 0.5s; }
+        #item3 { animation-delay: 1.2s; }
+
+        .ingredient:hover { 
+            transform: scale(1.1) !important; 
+            filter: drop-shadow(0 0 15px white); 
+            animation-play-state: paused;
+        }
+
+        #main-pot { 
+            position: absolute; left: 50%; top: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px; 
+            filter: drop-shadow(0 15px 30px rgba(0,0,0,0.3)); 
+            transition: transform 0.2s ease-out;
+        }
+
+        #fridge-area {
+            display: none; position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: var(--bg-cream);
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            z-index: 50; opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        #fridge-click-trigger {
+            position: absolute; z-index: 100; cursor: pointer;
+            left: 50%; top: 50%; transform: translate(-50%, -50%);
+            width: 450px; height: 650px;
+        }
+
+        #draggable-teos {
+            display: none; 
+            position: absolute;
+            width: 320px; 
+            cursor: pointer; 
+            z-index: 300;
+            filter: drop-shadow(0 10px 30px rgba(0,0,0,0.4));
+            transition: all 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #fade-overlay {
+            display: none; position: fixed; top: 0; left: 0; 
+            width: 100%; height: 100%; background: #1a1a1a;
+            z-index: 2000; flex-direction: column;
+            justify-content: center; align-items: center;
+            color: #d4c4b5; text-align: center; opacity: 0;
+            transition: opacity 2s ease;
+        }
+
+        .btn-talk {
+            padding: 18px 45px; background: transparent; color: #d4c4b5;
+            border: 2px solid #d4c4b5; border-radius: 40px;
+            cursor: pointer; font-size: 1.1rem; transition: all 0.4s;
+            margin-top: 20px;
+        }
+        .btn-talk:hover { background: #d4c4b5; color: #1a1a1a; box-shadow: 0 0 20px rgba(212, 196, 181, 0.4); }
+    </style>
+</head>
+<body onclick="resyncMusic()">
+
+<audio id="bg-music" loop><source src="music.mp3" type="audio/mpeg"></audio>
+<audio id="snd-click"><source src="click.mp3" type="audio/mpeg"></audio>
+<audio id="snd-click2"><source src="click2.mp3" type="audio/mpeg"></audio>
+<audio id="snd-open"><source src="open.mp3" type="audio/mpeg"></audio>
+<audio id="snd-close"><source src="close.mp3" type="audio/mpeg"></audio>
+
+<div id="game-container">
+    <div id="hint-text"><span id="story-line">Whoops! You've just jumped straight into the kitchen...</span></div>
+
+    <div id="table-area">
+        <img src="savoiardi.png" class="ingredient" id="item1" onclick="addToPot('item1')" style="left: 15%; bottom: 15%;">
+        <img src="coffee_cup.png" class="ingredient" id="item2" onclick="addToPot('item2')" style="left: 30%; top: 5%;">
+        <img src="cacao.png" class="ingredient" id="item3" onclick="addToPot('item3')" style="right: 15%; bottom: 20%;">
+        <img src="teos_yogurt.png" id="main-pot">
+    </div>
+
+    <div id="fridge-area"><div id="fridge-click-trigger"></div></div>
+    <img src="teos_yogurt.png" id="draggable-teos" onclick="putInFridge()">
+
+    <div id="fade-overlay">
+        <p style="font-style: italic; font-size: 1.5rem; margin-bottom: 30px; line-height: 1.6;">
+            While the dessert is chilling... <br> let's catch up a little.
+        </p>
+        <button class="btn-talk" onclick="goToShelter()">Open the letter</button>
+    </div>
+</div>
+
+<script>
+    const audio = document.getElementById('bg-music');
+    const sndClick = document.getElementById('snd-click');
+    const sndClick2 = document.getElementById('snd-click2');
+    const sndOpen = document.getElementById('snd-open');
+    const sndClose = document.getElementById('snd-close');
+
+    function resyncMusic() {
+        if (audio.paused) {
+            const savedTime = localStorage.getItem('musicTime');
+            if (savedTime) audio.currentTime = savedTime;
+            audio.volume = 0.4;
+            audio.play().catch(() => {});
+        }
+    }
+
+    setInterval(() => {
+        if (!audio.paused) localStorage.setItem('musicTime', audio.currentTime);
+    }, 1000);
+
+    function playSnd(snd) {
+        snd.currentTime = 0;
+        snd.volume = 0.3;
+        snd.play().catch(() => {});
+    }
+
+    const storyLine = document.getElementById('story-line');
+    const hintBox = document.getElementById('hint-text');
+    const tableArea = document.getElementById('table-area');
+    const fridgeArea = document.getElementById('fridge-area');
+    const dragTeos = document.getElementById('draggable-teos');
+    const mainPot = document.getElementById('main-pot');
+    const trigger = document.getElementById('fridge-click-trigger');
+    const fadeOverlay = document.getElementById('fade-overlay');
+
+    let count = 0;
+    let state = 'cooking';
+
+    function changeText(newText, delay) {
+        setTimeout(() => {
+            hintBox.style.opacity = '0';
+            setTimeout(() => {
+                storyLine.innerHTML = newText;
+                hintBox.style.opacity = '1';
+            }, 800);
+        }, delay);
+    }
+
+    window.onload = () => {
+        const savedTime = localStorage.getItem('musicTime');
+        if (savedTime) audio.currentTime = savedTime;
+        audio.play().catch(() => {});
+        
+        changeText("Of course, this isn't the glass room, <br>but there’s plenty to see here too.", 3500);
+        changeText("I know you missed this. <br><b>Tap the ingredients to add them.</b>", 8000);
+    };
+
+    function addToPot(id) {
+        resyncMusic();
+        if (state !== 'cooking') return;
+        const el = document.getElementById(id);
+        if (el.style.opacity === '0') return;
+
+        playSnd(sndClick2);
+        el.style.animation = 'none';
+        el.style.left = "50%"; el.style.top = "50%";
+        el.style.transform = "translate(-50%, -50%) scale(0.1)";
+        el.style.opacity = "0"; el.style.pointerEvents = "none";
+
+        mainPot.style.transform = "translate(-50%, -50%) scale(1.15)";
+        setTimeout(() => mainPot.style.transform = "translate(-50%, -50%) scale(1)", 200);
+
+        count++;
+        if (count < 3) {
+            storyLine.innerHTML = "<b>Mixing... (" + count + "/3)</b>";
+        } else {
+            state = 'ready';
+            storyLine.innerHTML = "<b>Ready! Click the fridge to open it.</b>";
+            setTimeout(goToFridge, 1500);
+        }
+    }
+
+    function goToFridge() {
+        tableArea.style.opacity = '0';
+        setTimeout(() => {
+            tableArea.style.display = 'none';
+            fridgeArea.style.backgroundImage = "url('fridge_closed.png')";
+            fridgeArea.style.display = 'block';
+            setTimeout(() => {
+                fridgeArea.style.opacity = '1';
+                state = 'fridge_closed';
+            }, 100);
+        }, 800);
+    }
+
+    trigger.addEventListener('click', () => {
+        resyncMusic();
+        if (state === 'fridge_closed') {
+            playSnd(sndOpen);
+            fridgeArea.style.backgroundImage = "url('fridge_opened.png')";
+            state = 'fridge_opened';
+            storyLine.innerHTML = "<b>Tap the TEOS to put it inside.</b>";
+            trigger.style.left = "85%"; trigger.style.width = "40vw";
+            dragTeos.style.display = 'block';
+            dragTeos.style.left = '50%'; dragTeos.style.bottom = '10%';
+            dragTeos.style.transform = 'translateX(-50%)';
+            dragTeos.style.animation = 'floating 3s infinite ease-in-out';
+        } else if (state === 'teos_inside') {
+            playSnd(sndClose);
+            fridgeArea.style.backgroundImage = "url('fridge_closed.png')";
+            dragTeos.style.display = 'none';
+            hintBox.style.opacity = '0';
+            trigger.style.display = 'none';
+            setTimeout(() => {
+                fadeOverlay.style.display = 'flex';
+                setTimeout(() => fadeOverlay.style.opacity = '1', 200);
+            }, 1200);
+        }
+    });
+
+    function putInFridge() {
+        resyncMusic();
+        if (state !== 'fridge_opened') return;
+        playSnd(sndClick2);
+        dragTeos.style.animation = 'none';
+        dragTeos.style.width = '140px'; 
+        dragTeos.style.left = '41%'; dragTeos.style.top = '44%'; 
+        dragTeos.style.bottom = 'auto'; dragTeos.style.transform = 'none'; 
+        dragTeos.style.cursor = 'default';
+        state = 'teos_inside';
+        storyLine.innerHTML = "<b>Perfect. Now close the door.</b>";
+    }
+
+    function goToShelter() {
+        playSnd(sndClick); // Звук обычного клика для кнопки
+        localStorage.setItem('musicTime', audio.currentTime);
+        // Небольшая задержка перед переходом, чтобы звук успел начаться
+        setTimeout(() => {
+            window.location.href = 'shelter.html';
+        }, 150);
+    }
+</script>
+</body>
+</html>

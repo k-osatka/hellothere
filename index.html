@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome | Quiet Time</title>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Playfair+Display:ital@1&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --ghibli-brown: #5d4037; 
+            --pale-green: #d1dfd1;
+            --soft-mint: #e2ede2;
+            --sage-green: #c5d6c5;
+            --white-glass: rgba(255, 255, 255, 0.45);
+        }
+        
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Comfortaa', cursive; 
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--soft-mint), var(--pale-green), var(--sage-green), #f4f7f4);
+            background-size: 400% 400%;
+            animation: gradientMove 15s ease-in-out infinite;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .fireflies-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .firefly {
+            position: absolute;
+            background: rgba(255, 255, 240, 1);
+            border-radius: 50%;
+            filter: blur(1px);
+            box-shadow: 0 0 15px 4px rgba(255, 255, 255, 0.9);
+            opacity: 0;
+            animation: driftUp var(--d) linear infinite;
+        }
+
+        @keyframes driftUp {
+            0% { transform: translateY(110vh) translateX(0); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(-15vh) translateX(80px); opacity: 0; }
+        }
+
+        #music-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            z-index: 100;
+            transition: opacity 1.5s ease;
+        }
+
+        .play-hint {
+            color: var(--ghibli-brown);
+            margin-top: 25px;
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0.6;
+            animation: pulseText 3s infinite ease-in-out;
+            font-weight: 700;
+        }
+
+        @keyframes pulseText {
+            0%, 100% { opacity: 0.3; letter-spacing: 3px; }
+            50% { opacity: 0.8; letter-spacing: 5px; }
+        }
+
+        #music-btn {
+            width: 100px; height: 100px;
+            background: white;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5), 0 10px 40px rgba(0,0,0,0.05);
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+            animation: buttonGlow 4s infinite;
+        }
+
+        @keyframes buttonGlow {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7), 0 10px 40px rgba(0,0,0,0.05); }
+            50% { box-shadow: 0 0 0 20px rgba(255, 255, 255, 0), 0 15px 50px rgba(0,0,0,0.1); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0), 0 10px 40px rgba(0,0,0,0.05); }
+        }
+
+        #music-btn::before {
+            content: '';
+            position: absolute;
+            width: 110%; height: 110%;
+            border: 1px solid white;
+            border-radius: 50%;
+            animation: rotateRing 10s linear infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes rotateRing {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        #music-btn:hover {
+            transform: scale(1.15) rotate(5deg);
+            background: #fffdfa;
+        }
+
+        /* Обновленная иконка Play */
+        .play-icon {
+            fill: var(--ghibli-brown);
+            width: 28px;
+            margin-left: 4px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+            transition: transform 0.4s ease;
+        }
+
+        #login-box {
+            position: relative;
+            z-index: 10;
+            background: var(--white-glass);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 80px 30px 100px 40px; 
+            padding: 70px 50px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            text-align: center;
+            box-shadow: 0 40px 100px rgba(93, 64, 55, 0.08);
+            max-width: 440px; width: 85%;
+            display: none;
+            opacity: 0;
+            transform: scale(0.9) translateY(40px);
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .show-box {
+            display: block !important;
+            animation: revealBox 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes revealBox {
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        h1 { color: var(--ghibli-brown); font-size: 1.8rem; margin-bottom: 15px; }
+        .subtitle { color: #7d6a61; font-size: 0.95rem; margin-bottom: 40px; line-height: 1.8; opacity: 0.85; }
+
+        input {
+            width: 85%; padding: 18px 25px; border: none; border-radius: 30px;
+            background: rgba(255, 255, 255, 0.5); font-family: 'Comfortaa', cursive;
+            font-size: 1.1rem; color: var(--ghibli-brown); text-align: center;
+            outline: none; transition: 0.4s;
+        }
+        input:focus { background: rgba(255, 255, 255, 0.9); transform: translateY(-2px); }
+
+        .btn-enter {
+            padding: 18px 70px; background: var(--ghibli-brown); color: #fff;
+            border: none; border-radius: 50px; cursor: pointer;
+            font-size: 1.1rem; font-weight: 700; font-family: 'Comfortaa', cursive;
+            margin-top: 30px; transition: 0.4s;
+        }
+
+        .fade-away { opacity: 0 !important; transform: scale(1.1) rotate(2deg) !important; filter: blur(20px); }
+        #error-msg { color: #d9534f; font-size: 0.8rem; margin-top: 15px; opacity: 0; }
+        .shake { animation: shake 0.4s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .success-flash { background: white !important; transition: background 0.8s ease; }
+    </style>
+</head>
+<body>
+
+<audio id="bg-music" loop><source src="music.mp3" type="audio/mpeg"></audio>
+<audio id="click-sound"><source src="click.mp3" type="audio/mpeg"></audio>
+
+<div class="fireflies-container" id="fireflies"></div>
+
+<div id="music-screen">
+    <div id="music-btn" onclick="initExperience()">
+        <svg class="play-icon" viewBox="0 0 24 24">
+            <path d="M19.5,12c0,0.6-0.3,1.2-0.8,1.5l-9.8,5.7c-0.6,0.3-1.4,0.3-2,0c-0.6-0.4-1-1-1-1.7V6.1c0-0.7,0.4-1.3,1-1.7 c0.6-0.4,1.4-0.4,2,0l9.8,5.7C19.2,10.8,19.5,11.4,19.5,12z"/>
+        </svg>
+    </div>
+    <div class="play-hint">Turn on the atmosphere</div>
+</div>
+
+<div id="login-box">
+    <h1 id="title">Hello there!</h1>
+    <p class="subtitle" id="subtitle">It's been a while, hasn't it? <br> I know who you are, but let's make sure it's really you.</p>
+    
+    <div id="inputContainer">
+        <input type="text" id="nameInput" placeholder="Enter your name..." autocomplete="off">
+        <div id="error-msg">That's not the name I was looking for...</div>
+    </div>
+    
+    <button class="btn-enter" id="mainBtn" onclick="checkName()">Enter</button>
+</div>
+
+<script>
+    const audio = document.getElementById('bg-music');
+    const clickSound = document.getElementById('click-sound');
+    
+    function playClick() {
+        clickSound.currentTime = 0;
+        clickSound.volume = 0.2;
+        clickSound.play();
+    }
+
+    const container = document.getElementById('fireflies');
+    for (let i = 0; i < 40; i++) {
+        const f = document.createElement('div');
+        f.className = 'firefly';
+        const size = Math.random() * 5 + 4 + 'px';
+        f.style.width = size; f.style.height = size;
+        f.style.left = Math.random() * 100 + 'vw';
+        f.style.setProperty('--d', (Math.random() * 6 + 8) + 's');
+        f.style.animationDelay = (Math.random() * -10) + 's'; 
+        container.appendChild(f);
+    }
+
+    function initExperience() {
+        playClick();
+        const musicScreen = document.getElementById('music-screen');
+        const loginBox = document.getElementById('login-box');
+
+        audio.play();
+        audio.volume = 0;
+        let fadeIn = setInterval(() => {
+            if (audio.volume < 0.4) audio.volume += 0.05;
+            else clearInterval(fadeIn);
+        }, 150);
+
+        musicScreen.style.opacity = '0';
+        setTimeout(() => {
+            musicScreen.style.display = 'none';
+            loginBox.classList.add('show-box');
+        }, 1500);
+    }
+
+    function checkName() {
+        playClick();
+        const input = document.getElementById('nameInput').value.trim().toLowerCase();
+        const box = document.getElementById('login-box');
+        const title = document.getElementById('title');
+        const subtitle = document.getElementById('subtitle');
+
+        // Список разрешенных имен (все в нижнем регистре для корректной проверки)
+        const allowedNames = ["fedya", "fyodor", "федя", "фёдор"];
+
+        if (allowedNames.includes(input)) {
+            localStorage.setItem('musicTime', audio.currentTime);
+            localStorage.setItem('musicPlaying', 'true');
+
+            document.body.classList.add('success-flash');
+            document.getElementById('inputContainer').style.opacity = "0";
+            document.getElementById('mainBtn').style.transform = "scale(0)";
+            
+            setTimeout(() => { 
+                document.getElementById('inputContainer').style.display = "none";
+                document.getElementById('mainBtn').style.display = "none";
+                title.style.opacity = "0";
+                subtitle.style.opacity = "0";
+                
+                setTimeout(() => {
+                    title.innerText = "Yes...";
+                    subtitle.innerHTML = "You are exactly the one I was looking for.";
+                    title.style.fontSize = "2.2rem";
+                    title.style.fontStyle = "italic";
+                    title.style.opacity = "1";
+                    subtitle.style.opacity = "1";
+                }, 600);
+            }, 500);
+
+            setTimeout(() => {
+                box.classList.add('fade-away');
+                localStorage.setItem('musicTime', audio.currentTime);
+                setTimeout(() => { window.location.href = "dog.html"; }, 1500);
+            }, 4500);
+            
+        } else {
+            document.getElementById('error-msg').style.opacity = "1";
+            box.classList.add('shake');
+            setTimeout(() => box.classList.remove('shake'), 400);
+        }
+    }
+
+    document.getElementById('nameInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') checkName();
+    });
+
+    setInterval(() => {
+        if (!audio.paused) localStorage.setItem('musicTime', audio.currentTime);
+    }, 100);
+</script>
+
+</body>
+</html>

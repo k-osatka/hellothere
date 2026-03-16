@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shelter | Aurora Silence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Alice&family=Cormorant+Garamond:ital,wght@0,300;1,300&family=Montserrat:wght@200;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sky-dark: #050d14; 
+            --text-pearl: rgba(232, 245, 242, 0.75);
+            --accent: #d1f2eb; 
+        }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            background: var(--sky-dark);
+            color: var(--text-pearl);
+            font-family: 'Alice', serif;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        #custom-cursor {
+            position: fixed; width: 8px; height: 8px;
+            background: var(--accent); border-radius: 50%;
+            pointer-events: none; z-index: 9999;
+            box-shadow: 0 0 15px var(--accent), 0 0 30px var(--accent);
+            transition: transform 0.2s ease-out, opacity 0.3s ease;
+            transform: translate(-50%, -50%);
+        }
+
+        .viewport {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; pointer-events: none;
+            background: radial-gradient(circle at bottom, #0a2339 0%, #050d14 100%);
+        }
+
+        .aurora-wave {
+            position: absolute; width: 200%; height: 120%;
+            top: -10%; left: -50%;
+            background: radial-gradient(ellipse at center, rgba(0, 255, 170, 0.1) 0%, transparent 70%);
+            filter: blur(100px); opacity: 0.3;
+            animation: aurora-flow 25s infinite alternate ease-in-out;
+            z-index: 2;
+        }
+
+        @keyframes aurora-flow {
+            0% { transform: rotate(-3deg) scale(1); opacity: 0.2; }
+            100% { transform: rotate(3deg) scale(1.1); opacity: 0.4; }
+        }
+
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: twinkle 4s infinite ease-in-out; z-index: 3;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        .mountains {
+            position: absolute; bottom: 0; width: 100%; height: 35%;
+            background-color: #03080c;
+            clip-path: polygon(0% 100%, 0% 85%, 10% 75%, 25% 85%, 45% 65%, 65% 88%, 80% 78%, 100% 92%, 100% 100%);
+            opacity: 0.9; z-index: 5;
+        }
+
+        .master-container {
+            position: relative; z-index: 20;
+            width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: center; text-align: center;
+        }
+
+        #intro-text {
+            font-size: 28px; color: var(--accent);
+            text-shadow: 0 0 15px var(--accent); opacity: 0;
+            transition: opacity 3s ease-in-out; position: absolute;
+            width: 100%; max-width: 800px; padding: 0 20px;
+            line-height: 1.6; font-family: 'Cormorant Garamond', serif; font-style: italic;
+        }
+
+        #text-content {
+            width: 85%; max-width: 750px; min-height: 400px;
+            display: none; flex-direction: column; 
+            justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 2.5s ease;
+        }
+
+        .message-p {
+            font-size: 25px; line-height: 1.7; letter-spacing: 0.2px;
+            margin-bottom: 25px; opacity: 0; filter: blur(12px);
+            transform: translateY(10px);
+            transition: all 2.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s ease;
+            width: 100%; color: var(--text-pearl);
+        }
+
+        .message-p:hover { color: #ffffff; text-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
+
+        .italic-style { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 300; font-size: 28px; }
+
+        .quote-p {
+            font-size: 32px !important; color: var(--accent) !important; 
+            font-family: 'Cormorant Garamond', serif !important;
+            font-style: italic !important; line-height: 1.4 !important; 
+            text-shadow: 0 0 20px rgba(209, 242, 235, 0.3) !important;
+            margin-top: 20px !important;
+        }
+
+        #text-content.visible .message-p { opacity: 1; filter: blur(0); transform: translateY(0); }
+
+        .btn-next {
+            margin-top: 40px; background: none; border: none;
+            color: var(--accent); font-family: 'Montserrat', sans-serif;
+            font-weight: 400; letter-spacing: 5px; text-transform: uppercase;
+            opacity: 0.6; transition: 0.8s; font-size: 12px; outline: none;
+            animation: pulse-hint 3s infinite ease-in-out; cursor: none;
+        }
+
+        .btn-next:hover { opacity: 1; letter-spacing: 7px; text-shadow: 0 0 10px var(--accent); }
+
+        .yogurt-ready {
+            display: none; margin-top: 50px; color: var(--accent);
+            text-decoration: none; border: 1px solid var(--accent);
+            padding: 16px 45px; border-radius: 50px;
+            font-size: 11px; letter-spacing: 5px; transition: 0.8s;
+            text-transform: uppercase; opacity: 0; cursor: none;
+        }
+        .yogurt-ready:hover { background: var(--accent); color: var(--sky-dark); box-shadow: 0 0 50px var(--accent); }
+
+        .quote-author {
+            display: block; margin-top: 15px; font-family: 'Montserrat', sans-serif;
+            font-size: 12px; letter-spacing: 4px; text-transform: uppercase;
+            opacity: 0.5; color: var(--accent);
+        }
+    </style>
+</head>
+<body onclick="resyncMusic()">
+
+    <audio id="bg-music" loop><source src="music.mp3" type="audio/mpeg"></audio>
+    <audio id="click-sound"><source src="click3.mp3" type="audio/mpeg"></audio>
+
+    <div id="custom-cursor"></div>
+
+    <div class="viewport" id="sky">
+        <div class="aurora-wave"></div>
+        <div class="mountains"></div>
+    </div>
+
+    <div class="master-container">
+        <div id="intro-text">
+            Let's wait a few minutes while the dessert is being prepared...<br>
+            I'd like to have a sincere talk.
+        </div>
+        
+        <div id="text-content"></div>
+        
+        <div style="position: absolute; bottom: 15%; width: 100%;">
+            <button id="next-btn" class="btn-next" onclick="handleNextClick()" style="display:none;">continue listening</button>
+            <a href="yogurt.html" id="final-link" class="yogurt-ready" onclick="handleFinalClick(event)">The yogurt is ready now</a>
+        </div>
+    </div>
+
+    <script>
+        const audio = document.getElementById('bg-music');
+        const clickSound = document.getElementById('click-sound');
+        const cursor = document.getElementById('custom-cursor');
+
+        // Логика звуков
+        function playClick() {
+            clickSound.currentTime = 0;
+            clickSound.volume = 0.4;
+            clickSound.play().catch(() => {});
+        }
+
+        function resyncMusic() {
+            if (audio.paused) {
+                const savedTime = localStorage.getItem('musicTime');
+                if (savedTime) audio.currentTime = savedTime;
+                audio.volume = 0.4;
+                audio.play().catch(e => console.log("Audio waiting for interaction"));
+            }
+        }
+
+        // Синхронизация времени музыки
+        setInterval(() => {
+            if (!audio.paused) localStorage.setItem('musicTime', audio.currentTime);
+        }, 1000);
+
+        // Курсор
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        function updateCursorInteractions() {
+            const interactives = document.querySelectorAll('.message-p, .btn-next, .yogurt-ready');
+            interactives.forEach(el => {
+                el.addEventListener('mouseenter', () => cursor.style.transform = 'translate(-50%, -50%) scale(2.5)');
+                el.addEventListener('mouseleave', () => cursor.style.transform = 'translate(-50%, -50%) scale(1)');
+            });
+        }
+
+        function initStars() {
+            const sky = document.getElementById('sky');
+            for (let i = 0; i < 130; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 1.8;
+                star.style.width = size + 'px'; star.style.height = size + 'px';
+                star.style.left = Math.random() * 100 + '%'; star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 5 + 's';
+                sky.appendChild(star);
+            }
+        }
+
+        const messageParts = [
+            "<div class='message-p'>To be honest, I'll say this right away: I'm not writing this to <span class='italic-style'>win back what we had</span>. I'm not expecting anything, really. It's just very important to me that you know: I know how to do more than just take. I know how to notice, how to take steps forward, and how to put in effort in return.</div>",
+            "<div class='message-p'>I felt so much warmth from your attention. All those things — your support, the website for Valentine's Day, that gift of ice cream (I wanted it so badly back then, you have no idea)... You didn't just listen, you truly <i>saw</i> me. Thank you. You are amazing — so sweet and incredibly funny. I'm truly sorry that I probably couldn't show you back then how much it meant to me.</div>",
+            "<div class='message-p'>Lately, I've been thinking a lot about where I'm going. And it was you who became that mirror in which I saw that I might have lost my way. I spent so much time pretending to be this \"iron,\" material girl who isn't afraid of anything... But it was just <i>armor</i>. I had been hurt too much before, and I was afraid it would happen again.</div>",
+            "<div class='message-p'>I'm sorry that you ended up meeting my armor instead of me. That you mimicked <i>this version of me</i>, never getting to know who I really am. I'm still learning to understand myself. But right now, I feel for sure: I want peace. I want to be free, I want to love. I think I would be happiest in a cozy house closer to nature, with goats and cows — <span class='italic-style'>making those freezer meal preps</span> for the week ahead we once talked about and simply enjoying the silence. In a place where there's no need to rush anywhere or prove anything.</div>",
+            "<div class='message-p'>I'm writing all this because, thanks to you, I've started to realize it. My anxiety has always been with me, but I noticed that near you, near someone so reliable and brave, it began to <span class='italic-style'>quiet down</span> for the first time. Thank you for that rare sense of safety. I felt very peaceful with you.</div>",
+            "<div class='message-p'>For a long time, I was afraid of being \"wrong\" or weak. But now I know that it's precisely in this honesty and imperfection where the whole truth lies. All our cracks and quirks — they aren't mistakes. They are the very things worth holding onto.</div>",
+            "<div><div class='message-p quote-p'>«People call these things imperfections, but they’re not — that’s the good stuff.»</div><span class='quote-author'>— Sean Maguire</span></div>"
+        ];
+
+        let currentPart = 0;
+        const introText = document.getElementById('intro-text');
+        const textContainer = document.getElementById('text-content');
+        const nextBtn = document.getElementById('next-btn');
+        const finalLink = document.getElementById('final-link');
+
+        function startConversation() {
+            setTimeout(() => {
+                introText.style.opacity = '1';
+                setTimeout(() => {
+                    introText.style.opacity = '0';
+                    setTimeout(() => {
+                        introText.style.display = 'none';
+                        textContainer.style.display = 'flex';
+                        setTimeout(() => {
+                            textContainer.style.opacity = '1';
+                            showNext();
+                        }, 100);
+                    }, 2500);
+                }, 5000);
+            }, 1000);
+        }
+
+        function handleNextClick() {
+            playClick();
+            showNext();
+        }
+
+        function handleFinalClick(e) {
+            e.preventDefault();
+            playClick();
+            localStorage.setItem('musicTime', audio.currentTime);
+            setTimeout(() => { window.location.href = "yogurt.html"; }, 300);
+        }
+
+        function showNext() {
+            textContainer.classList.remove('visible');
+            nextBtn.style.display = 'none';
+
+            setTimeout(() => {
+                if (currentPart < messageParts.length) {
+                    textContainer.innerHTML = messageParts[currentPart];
+                    textContainer.offsetHeight; 
+                    textContainer.classList.add('visible');
+                    updateCursorInteractions();
+
+                    currentPart++;
+                    setTimeout(() => {
+                        if (currentPart < messageParts.length) {
+                            nextBtn.style.display = 'inline-block';
+                        } else {
+                            showFinal();
+                        }
+                    }, 3000); 
+                }
+            }, 1200);
+        }
+
+        function showFinal() {
+            setTimeout(() => {
+                finalLink.style.display = 'inline-block';
+                setTimeout(() => { finalLink.style.opacity = '1'; }, 100);
+            }, 1500); 
+        }
+
+        window.onload = () => {
+            const savedTime = localStorage.getItem('musicTime');
+            if (savedTime) audio.currentTime = savedTime;
+            audio.play().catch(() => {});
+            
+            initStars();
+            startConversation();
+        };
+    </script>
+</body>
+</html>

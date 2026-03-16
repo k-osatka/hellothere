@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ghibli Kitchen | Evening Stroll</title>
+    <link href="https://fonts.googleapis.com/css2?family=Alice&family=EB+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg-night: #1a2639; 
+            --accent-gold: #ffd166; 
+            --text-pearl: #fdfaf5; 
+            --soft-aqua: #d1f2eb;
+        }
+        
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            overflow: hidden; 
+            background-color: var(--bg-night); 
+            font-family: 'EB Garamond', serif;
+            cursor: none; 
+            -webkit-font-smoothing: antialiased; /* Делает шрифт еще чище на Mac/iOS */
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw; height: 100vh;
+            background: url('starry_valley.jpg') no-repeat center center;
+            background-size: cover;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+
+        /* КУРСОР И МАГИЧЕСКИЙ ШЛЕЙФ */
+        #custom-cursor {
+            position: fixed;
+            width: 10px; height: 10px;
+            background: var(--accent-gold);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            box-shadow: 0 0 15px var(--accent-gold);
+            transform: translate(-50%, -50%);
+            will-change: left, top;
+        }
+
+        .cursor-trail {
+            position: fixed;
+            background: var(--accent-gold);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            animation: sparkleAndFade 1.2s forwards ease-out;
+            will-change: transform, opacity;
+        }
+
+        @keyframes sparkleAndFade {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { 
+                opacity: 0; 
+                transform: translate(-50%, -50%) translate(calc(var(--rx) * 1px), calc(var(--ry) * 1px)) scale(0); 
+            }
+        }
+
+        .message-box {
+            position: relative;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 70px 60px;
+            border-radius: 40px;
+            text-align: center;
+            max-width: 650px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+        }
+
+        .main-text {
+            color: var(--text-pearl);
+            font-family: 'Alice', serif; 
+            font-size: 1.7rem; 
+            line-height: 1.5;
+            margin-bottom: 30px;
+            font-weight: 400; /* Alice сама по себе тонкая, оставляем 400 */
+        }
+
+        .letter {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: letterFadeIn 0.8s forwards;
+        }
+
+        .word { display: inline-block; white-space: nowrap; }
+
+        @keyframes letterFadeIn { to { opacity: 1; transform: translateY(0); } }
+
+        .support-text {
+            color: var(--text-pearl);
+            font-size: 1.25rem;
+            font-style: italic;
+            font-weight: 300; /* Облегченный шрифт */
+            line-height: 1.8;
+            opacity: 0;
+            filter: blur(5px);
+            transform: translateY(20px);
+            animation: textRevealBlur 2s forwards 3.5s; 
+            margin-bottom: 10px;
+        }
+
+        @keyframes textRevealBlur { to { opacity: 0.75; transform: translateY(0); filter: blur(0px); } }
+
+        .walk-choice { margin-top: 50px; }
+
+        .btn-maybe {
+            display: inline-block;
+            padding: 16px 45px;
+            background: transparent;
+            color: var(--soft-aqua);
+            border: 1px solid rgba(209, 242, 235, 0.2);
+            border-radius: 50px;
+            cursor: none;
+            font-family: 'Alice', serif;
+            font-size: 0.85rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            opacity: 0;
+            font-weight: 400;
+            animation: 
+                fadeInBtn 2s forwards 6s, 
+                levitate 4s ease-in-out infinite 8s,
+                glowPulse 3s ease-in-out infinite 8s;
+        }
+
+        @keyframes levitate {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(209, 242, 235, 0.05); border-color: rgba(209, 242, 235, 0.2); }
+            50% { box-shadow: 0 0 20px rgba(209, 242, 235, 0.2); border-color: rgba(209, 242, 235, 0.5); }
+        }
+
+        .btn-maybe:hover {
+            background: rgba(209, 242, 235, 0.1);
+            box-shadow: 0 0 35px rgba(209, 242, 235, 0.3);
+            letter-spacing: 5px;
+            transform: scale(1.02) !important;
+        }
+
+        @keyframes fadeInBtn { to { opacity: 0.9; } }
+
+        .firefly {
+            position: absolute;
+            background: var(--accent-gold);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10;
+            filter: blur(2px);
+            box-shadow: 0 0 15px var(--accent-gold);
+            animation: drift var(--d) infinite ease-in-out, blink var(--b) infinite ease-in-out;
+            will-change: transform, opacity;
+        }
+
+        @keyframes drift {
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(100px, -150px); }
+            66% { transform: translate(-80px, -250px); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 0.1; transform: scale(0.6); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body onclick="resyncMusic()">
+
+    <audio id="bg-music" loop><source src="music.mp3" type="audio/mpeg"></audio>
+    <audio id="click-btn-sound"><source src="click2.mp3" type="audio/mpeg"></audio>
+
+<div id="custom-cursor"></div>
+
+<div id="game-container">
+    <div id="fireflies-layer"></div>
+    <div class="message-box">
+        <p class="main-text" id="animated-title">
+            The evening is very quiet today. <br>
+            It feels like the world is taking a deep breath.
+        </p>
+        
+        <p class="support-text">
+            I'm just letting you know that my door is open. No pressure, no expectations. If you ever feel like taking a slow walk or just sitting in silence nearby — you know where to find me.
+        </p>
+        
+        <div class="walk-choice">
+            <a href="transition.html" class="btn-maybe" id="final-btn" onclick="handleFinalClick(event)">Maybe someday</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const audio = document.getElementById('bg-music');
+    const clickSound = document.getElementById('click-btn-sound');
+
+    function resyncMusic() {
+        if (audio.paused) {
+            const savedTime = localStorage.getItem('musicTime');
+            if (savedTime) audio.currentTime = savedTime;
+            audio.volume = 0.35;
+            audio.play().catch(() => {});
+        }
+    }
+
+    setInterval(() => {
+        if (!audio.paused) localStorage.setItem('musicTime', audio.currentTime);
+    }, 100);
+
+    window.onload = () => {
+        const savedTime = localStorage.getItem('musicTime');
+        if (savedTime) audio.currentTime = savedTime;
+        audio.play().catch(() => {});
+    };
+
+    function handleFinalClick(e) {
+        e.preventDefault();
+        clickSound.play();
+        localStorage.setItem('musicTime', audio.currentTime);
+        setTimeout(() => {
+            window.location.href = e.target.getAttribute('href');
+        }, 400);
+    }
+
+    const layer = document.getElementById('fireflies-layer');
+    for (let i = 0; i < 35; i++) {
+        const firefly = document.createElement('div');
+        firefly.className = 'firefly';
+        const size = Math.random() * 5 + 3;
+        firefly.style.width = size + 'px';
+        firefly.style.height = size + 'px';
+        firefly.style.left = Math.random() * 100 + 'vw';
+        firefly.style.top = Math.random() * 100 + 'vh';
+        firefly.style.setProperty('--d', (Math.random() * 15 + 20) + 's'); 
+        firefly.style.setProperty('--b', (Math.random() * 6 + 4) + 's');
+        firefly.style.animationDelay = (Math.random() * 10) + 's';
+        layer.appendChild(firefly);
+    }
+
+    const title = document.getElementById('animated-title');
+    const lines = title.innerHTML.split('<br>');
+    title.innerHTML = ''; 
+    let globalLetterCount = 0;
+    lines.forEach((line) => {
+        const lineContainer = document.createElement('span');
+        lineContainer.style.display = 'block';
+        const words = line.trim().split(' ');
+        words.forEach((word, wordIndex) => {
+            const wordSpan = document.createElement('span');
+            wordSpan.className = 'word';
+            word.split('').forEach(letter => {
+                const letterSpan = document.createElement('span');
+                letterSpan.className = 'letter';
+                letterSpan.innerText = letter;
+                letterSpan.style.animationDelay = (0.5 + globalLetterCount * 0.05) + 's';
+                wordSpan.appendChild(letterSpan);
+                globalLetterCount++;
+            });
+            lineContainer.appendChild(wordSpan);
+            if (wordIndex < words.length - 1) {
+                const space = document.createElement('span');
+                space.innerHTML = '&nbsp;';
+                lineContainer.appendChild(space);
+            }
+        });
+        title.appendChild(lineContainer);
+    });
+
+    const cursor = document.getElementById('custom-cursor');
+    let lastMousePos = { x: 0, y: 0 };
+
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+
+        const dist = Math.hypot(e.clientX - lastMousePos.x, e.clientY - lastMousePos.y);
+
+        if (dist > 12) {
+            for (let i = 0; i < 3; i++) {
+                const trail = document.createElement('div');
+                trail.className = 'cursor-trail';
+                const size = Math.random() * 3 + 2;
+                trail.style.width = size + 'px';
+                trail.style.height = size + 'px';
+                trail.style.setProperty('--rx', (Math.random() * 40 - 20));
+                trail.style.setProperty('--ry', (Math.random() * 40 - 20));
+                trail.style.left = e.clientX + 'px';
+                trail.style.top = e.clientY + 'px';
+                document.body.appendChild(trail);
+                setTimeout(() => trail.remove(), 1200);
+            }
+            lastMousePos = { x: e.clientX, y: e.clientY };
+        }
+    });
+</script>
+
+</body>
+</html>
